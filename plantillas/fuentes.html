@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block titulo %}Fuentes y criterio editorial | {{ sitio.nombre }} | {{ sitio.marca }}{% endblock %}
+{% block contenido %}
+<section class="cabecera-seccion" style="--color-seccion:#05173d;--texto-seccion:#fff">
+  <div class="contenedor">
+    <nav class="migas"><a href="index.html">Inicio</a> <i class="fa fa-angle-right"></i> Fuentes</nav>
+    <h1><i class="fa fa-globe"></i> Fuentes y criterio editorial</h1>
+    <p>De dónde salen las novedades y cómo las elegimos, traducimos y resumimos.</p>
+  </div>
+</section>
+<div class="contenedor texto-largo">
+  <h2 class="titulo-bloque"><span>Cómo funciona</span></h2>
+  <div class="liner"></div>
+  <p>Cada 3 horas el portal revisa revistas científicas, medios profesionales, agencias de prensa y buscadores de noticias de todo el mundo en inglés, español, portugués, francés, alemán e italiano. Las novedades de odontología se traducen al español de Argentina, se resumen, se clasifican por sección y se descartan las repetidas.</p>
+  <p>Publicamos un <b>resumen propio</b> de cada novedad y el enlace a la nota original: el texto completo y sus derechos pertenecen al medio que la publicó. La traducción y el resumen se hacen con asistencia de inteligencia artificial; por eso, ante cualquier decisión clínica, recomendamos leer la fuente original.</p>
+
+  <h2 class="titulo-bloque"><span>Fuentes que relevamos</span></h2>
+  <div class="liner"></div>
+  <table class="tabla-fuentes">
+    <thead><tr><th>Fuente</th><th>Idioma</th><th>Tipo</th><th>Notas</th></tr></thead>
+    <tbody>
+    {% for f in fuentes %}
+      <tr><td>{{ f.nombre }}</td><td>{{ idiomas.get(f.idioma, f.idioma)|capitalize }}</td><td>{{ 'Feed RSS' if f.tipo == 'rss' else 'Google Noticias' }}</td><td>{{ f.notas if f.tipo == 'rss' else '—' }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <h2 class="titulo-bloque"><span>Medios publicados ({{ medios|length }})</span></h2>
+  <div class="liner"></div>
+  <p class="medios">{{ medios|join(' · ') }}</p>
+  <p>¿Sos un medio y querés que sumemos tu feed, o que retiremos tus notas? Escribinos a través de <a href="{{ sitio.url_consulmed }}" target="_blank" rel="noopener">consulmed.com.ar</a>.</p>
+</div>
+{% endblock %}

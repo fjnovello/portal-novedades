@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import tarjeta, paginador %}
+{% block titulo %}{{ secciones[slug][0] }}{% if pagina > 1 %} (página {{ pagina }}){% endif %} | {{ sitio.nombre }} | {{ sitio.marca }}{% endblock %}
+{% block descripcion %}{{ secciones[slug][1] }} Novedades de todo el mundo traducidas al español.{% endblock %}
+{% block contenido %}
+<section class="cabecera-seccion" style="--color-seccion:{{ secciones[slug][2] }};--texto-seccion:{{ secciones[slug][4] }}">
+  <div class="contenedor">
+    <nav class="migas"><a href="../index.html">Inicio</a> <i class="fa fa-angle-right"></i> {{ secciones[slug][0] }}</nav>
+    <h1><i class="fa {{ secciones[slug][3] }}"></i> {{ secciones[slug][0] }}</h1>
+    <p>{{ secciones[slug][1] }}</p>
+    <span class="contador">{{ conteo_seccion[slug] }} novedades</span>
+  </div>
+</section>
+<div class="contenedor">
+  {% if notas %}
+  <div class="grilla grilla-amplia">
+    {% for a in notas %}{{ tarjeta(a, secciones, idiomas, raiz) }}{% endfor %}
+  </div>
+  {{ paginador(pagina, total_paginas, base_pag) }}
+  {% else %}
+  <p class="vacio">Todavía no hay novedades en esta sección. Se actualiza cada 3 horas.</p>
+  {% endif %}
+</div>
+{% endblock %}

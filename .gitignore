@@ -1,0 +1,5 @@
+sitio/
+__pycache__/
+*.tmp
+.venv/
+data/imagenes/

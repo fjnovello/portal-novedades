@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block titulo %}{{ sitio.nombre }} | {{ sitio.marca }}{% endblock %}</title>
+<meta name="description" content="{% block descripcion %}{{ sitio.lema }}. Tecnología, tratamientos, lanzamientos e investigación odontológica de todo el mundo, traducidos al español.{% endblock %}">
+<link rel="alternate" type="application/rss+xml" title="{{ sitio.nombre }} | {{ sitio.marca }}" href="{{ raiz }}feed.xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="{{ raiz }}static/css/font-awesome.min.css" rel="stylesheet">
+<link href="{{ raiz }}static/css/portal.css" rel="stylesheet">
+{% block cabecera_extra %}
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ sitio.nombre }} | {{ sitio.marca }}">
+<meta property="og:description" content="{{ sitio.lema }}">
+<meta property="og:site_name" content="{{ sitio.nombre }} | {{ sitio.marca }}">
+<meta property="og:locale" content="es_AR">
+<meta property="og:image" content="{{ sitio.url }}/static/og/portada.jpg">
+<meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+{% if sitio.gtm %}<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','{{ sitio.gtm }}');</script>{% endif %}
+</head>
+<body>
+<header class="encabezado">
+  <div class="contenedor encabezado-fila">
+    <a class="marca" href="{{ raiz }}index.html" aria-label="Inicio">
+      <img src="{{ raiz }}static/img/logo.png" alt="Consulmed" width="192" height="47">
+      <span class="marca-sep"></span>
+      <span class="marca-portal">Novedades<br><b>Odontológicas</b></span>
+    </a>
+    <form class="buscador" action="{{ raiz }}buscar.html" method="get" role="search">
+      <input type="search" name="q" placeholder="Buscar novedades…" aria-label="Buscar novedades">
+      <button type="submit" aria-label="Buscar"><i class="fa fa-search"></i></button>
+    </form>
+    <button class="menu-boton" aria-label="Abrir menú" aria-expanded="false"><i class="fa fa-bars"></i></button>
+  </div>
+  <nav class="navegacion" aria-label="Secciones">
+    <div class="contenedor">
+      <ul>
+        <li><a href="{{ raiz }}ultimas/index.html" class="{% if activa == 'ultimas' %}activa{% endif %}"><i class="fa fa-clock-o"></i> Últimas</a></li>
+        {% for slug, s in secciones.items() %}
+        <li><a href="{{ raiz }}seccion/{{ slug }}.html" class="{% if activa == slug %}activa{% endif %}">{{ cortos[slug] }}</a></li>
+        {% endfor %}
+        <li class="nav-rss"><a href="{{ raiz }}feed.xml" title="Suscribirse por RSS"><i class="fa fa-rss"></i> RSS</a></li>
+      </ul>
+    </div>
+  </nav>
+</header>
+
+{% if ultimas_ticker %}
+<div class="ticker" aria-label="Lo último">
+  <div class="contenedor ticker-fila">
+    <span class="ticker-etiqueta">Lo último</span>
+    <div class="ticker-ventana">
+      <div class="ticker-cinta">
+        {% for a in ultimas_ticker %}<a href="{{ raiz }}nota/{{ a.slug }}.html"><span class="punto" style="background:{{ secciones[a.seccion][2] }}"></span>{{ a.titulo }}</a>{% endfor %}
+        {% for a in ultimas_ticker %}<a href="{{ raiz }}nota/{{ a.slug }}.html" aria-hidden="true" tabindex="-1"><span class="punto" style="background:{{ secciones[a.seccion][2] }}"></span>{{ a.titulo }}</a>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<main>
+{% block contenido %}{% endblock %}
+</main>
+
+<footer class="pie">
+  <div class="contenedor pie-grilla">
+    <div>
+      <img src="{{ raiz }}static/img/logo.png" alt="Consulmed" width="160" height="39">
+      <p class="pie-lema">Generadores de sonrisas</p>
+      <p>Prestación, administración y financiamiento de servicios odontológicos. Líder en el mercado de la odontología en Argentina.</p>
+      <p class="pie-redes">
+        <a href="{{ sitio.facebook }}" target="_blank" rel="noopener" aria-label="Facebook"><i class="fa fa-facebook"></i></a>
+        <a href="{{ sitio.instagram }}" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa fa-instagram"></i></a>
+        <a href="{{ raiz }}feed.xml" aria-label="RSS"><i class="fa fa-rss"></i></a>
+      </p>
+    </div>
+    <div>
+      <h4>Secciones</h4>
+      <ul>
+        <li><a href="{{ raiz }}ultimas/index.html">Últimas novedades</a></li>
+        {% for slug, s in secciones.items() %}<li><a href="{{ raiz }}seccion/{{ slug }}.html">{{ s[0] }}</a></li>{% endfor %}
+      </ul>
+    </div>
+    <div>
+      <h4>El portal</h4>
+      <ul>
+        <li><a href="{{ raiz }}fuentes.html">Fuentes y criterio editorial</a></li>
+        <li><a href="{{ raiz }}buscar.html">Buscador</a></li>
+        <li><a href="{{ raiz }}feed.xml">Suscripción RSS</a></li>
+        <li><a href="{{ sitio.url_consulmed }}" target="_blank" rel="noopener">consulmed.com.ar</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Contacto</h4>
+      <p><a class="pie-tel" href="{{ sitio.telefono_link }}"><i class="fa fa-phone"></i> Call Center: {{ sitio.telefono }}</a></p>
+      <p class="pie-cifras"><b>{{ total_notas }}</b> novedades · <b>{{ total_fuentes }}</b> medios · <b>{{ total_idiomas }}</b> idiomas</p>
+      <p class="pie-act">Actualizado: {{ generado }}</p>
+    </div>
+  </div>
+  <div class="pie-legal">
+    <div class="contenedor">
+      Las notas de este portal son resúmenes propios en español de publicaciones de terceros, con enlace a la fuente original. Los derechos de cada nota pertenecen a su medio y autores. La traducción y el resumen se realizan con asistencia de inteligencia artificial: ante decisiones clínicas, consultá siempre la fuente original. © {{ anio }} Consulmed.
+    </div>
+  </div>
+</footer>
+<script src="{{ raiz }}static/js/portal.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

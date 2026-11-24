@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block titulo %}Buscar | {{ sitio.nombre }} | {{ sitio.marca }}{% endblock %}
+{% block contenido %}
+<section class="cabecera-seccion" style="--color-seccion:#0054a6;--texto-seccion:#fff">
+  <div class="contenedor">
+    <nav class="migas"><a href="index.html">Inicio</a> <i class="fa fa-angle-right"></i> Buscar</nav>
+    <h1><i class="fa fa-search"></i> Buscar novedades</h1>
+    <form class="buscador buscador-grande" onsubmit="event.preventDefault();buscarNovedades(this.q.value)">
+      <input type="search" name="q" id="q" placeholder="Ej.: implantes, inteligencia artificial, alineadores…" aria-label="Buscar" autofocus>
+      <button type="submit" aria-label="Buscar"><i class="fa fa-search"></i></button>
+    </form>
+  </div>
+</section>
+<div class="contenedor">
+  <p id="resultado-info" class="resultado-info"></p>
+  <ul id="resultados" class="lista-filas"></ul>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>window.SECCIONES={{ secciones|tojson }};</script>
+<script src="static/js/indice.js"></script>
+<script>iniciarBuscador();</script>
+{% endblock %}

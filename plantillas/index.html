@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% from "_macros.html" import tarjeta, fila, pastilla, idioma_tag %}
+{% block contenido %}
+<section class="portada contenedor">
+  {% if principal %}
+  <article class="principal" style="--color-seccion:{{ secciones[principal.seccion][2] }}">
+    <div class="principal-cuerpo">
+      <div class="tarjeta-meta">{{ pastilla(principal.seccion, secciones, raiz) }} {{ idioma_tag(principal, idiomas) }}</div>
+      <h1><a href="nota/{{ principal.slug }}.html">{{ principal.titulo }}</a></h1>
+      <p>{{ principal.resumen }}</p>
+      {% if principal.por_que_importa %}<p class="principal-importa"><b>Por qué importa:</b> {{ principal.por_que_importa }}</p>{% endif %}
+      <div class="tarjeta-pie"><span class="fuente"><i class="fa fa-newspaper-o"></i> {{ principal.fuente }}</span><time datetime="{{ principal.fecha }}" data-relativa>{{ principal.fecha|fecha_corta }}</time></div>
+      <a class="boton boton-claro" href="nota/{{ principal.slug }}.html">Leer la novedad <i class="fa fa-angle-right"></i></a>
+    </div>
+    <i class="fa {{ secciones[principal.seccion][3] }} principal-icono" aria-hidden="true"></i>
+  </article>
+  {% endif %}
+  <div class="secundarias">
+    {% for a in secundarias %}{{ tarjeta(a, secciones, idiomas, raiz, 'compacta') }}{% endfor %}
+  </div>
+</section>
+
+<section class="cifras">
+  <div class="contenedor"><div class="cifras-fila">
+    <div><b>{{ total_notas }}</b><span>novedades publicadas</span></div>
+    <div><b>{{ total_fuentes }}</b><span>medios de todo el mundo</span></div>
+    <div><b>{{ total_idiomas }}</b><span>idiomas de origen</span></div>
+    <div><b>8</b><span>actualizaciones por día</span></div>
+  </div></div>
+</section>
+
+<div class="contenedor columnas">
+  <div class="columna-principal">
+    <section class="bloque">
+      <h2 class="titulo-bloque"><span>Últimas novedades</span></h2>
+      <div class="liner"></div>
+      <ul class="lista-filas">
+        {% for a in ultimas %}{{ fila(a, secciones, idiomas, raiz) }}{% endfor %}
+      </ul>
+      <p class="ver-mas"><a class="boton" href="ultimas/index.html">Ver todas las novedades <i class="fa fa-angle-right"></i></a></p>
+    </section>
+
+    {% for slug, notas in bloques if notas %}
+    <section class="bloque">
+      {% set tc = secciones[slug][2] if secciones[slug][4] == '#ffffff' else '#1d7fc1' %}
+      <h2 class="titulo-bloque" style="--color-seccion:{{ tc }}"><i class="fa {{ secciones[slug][3] }}"></i> <span>{{ secciones[slug][0] }}</span></h2>
+      <div class="liner" style="background:{{ tc }}"></div>
+      <div class="grilla">
+        {% for a in notas %}{{ tarjeta(a, secciones, idiomas, raiz) }}{% endfor %}
+      </div>
+      <p class="ver-mas"><a href="seccion/{{ slug }}.html">Más de {{ secciones[slug][0] }} ({{ conteo_seccion[slug] }}) <i class="fa fa-angle-right"></i></a></p>
+    </section>
+    {% endfor %}
+  </div>
+
+  <aside class="lateral">
+    <div class="caja">
+      <h3 class="caja-titulo"><i class="fa fa-star"></i> Destacadas de la semana</h3>
+      <ol class="ranking">
+        {% for a in destacadas %}<li><a href="nota/{{ a.slug }}.html">{{ a.titulo }}</a><small>{{ a.fuente }}</small></li>{% endfor %}
+      </ol>
+    </div>
+    {% if argentina %}
+    <div class="caja caja-ar">
+      <h3 class="caja-titulo"><i class="fa fa-map-marker"></i> Argentina y la región</h3>
+      <ul class="mini">
+        {% for a in argentina %}<li><a href="nota/{{ a.slug }}.html">{{ a.titulo }}</a><small>{{ a.fuente }} · {{ a.fecha|fecha_larga }}</small></li>{% endfor %}
+      </ul>
+      <a class="caja-link" href="seccion/argentina.html">Ver todo <i class="fa fa-angle-right"></i></a>
+    </div>
+    {% endif %}
+    <div class="caja caja-suscripcion">
+      <h3>Recibí las novedades</h3>
+      <p>Un resumen semanal con lo más importante de la odontología mundial, en tu correo.</p>
+      {% if sitio.suscripcion_url %}
+      <form class="suscripcion" action="{{ sitio.suscripcion_url }}" method="post">
+        <input type="email" name="email" required placeholder="Tu correo electrónico" aria-label="Correo electrónico">
+        <button type="submit" class="boton boton-naranja">Suscribirme</button>
+      </form>
+      {% else %}
+      <p class="chico"><b>Newsletter semanal: próximamente.</b></p>
+      {% endif %}
+      <p class="chico">O seguinos por <a href="feed.xml"><i class="fa fa-rss"></i> RSS</a>.</p>
+    </div>
+    <div class="caja">
+      <h3 class="caja-titulo"><i class="fa fa-th-large"></i> Secciones</h3>
+      <ul class="secciones-lista">
+        {% for slug, s in secciones.items() %}<li><a href="seccion/{{ slug }}.html"><span class="punto" style="background:{{ s[2] }}"></span>{{ s[0] }}<b>{{ conteo_seccion[slug] }}</b></a></li>{% endfor %}
+      </ul>
+    </div>
+    <a class="caja caja-consulmed" href="{{ sitio.url_consulmed }}" target="_blank" rel="noopener">
+      <img src="static/img/logo.png" alt="Consulmed" width="150" height="37">
+      <p>Prestación, administración y financiamiento de servicios odontológicos para empresas, prepagas y obras sociales.</p>
+      <span>Conocé Consulmed <i class="fa fa-angle-right"></i></span>
+    </a>
+  </aside>
+</div>
+{% endblock %}

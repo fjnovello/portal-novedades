@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block titulo %}Página no encontrada | {{ sitio.nombre }}{% endblock %}
+{% block contenido %}
+<div class="contenedor vacio-grande">
+  <i class="fa fa-search"></i>
+  <h1>No encontramos esa página</h1>
+  <p>Puede que la novedad se haya movido. Probá con el buscador o volvé a la portada.</p>
+  <p><a class="boton" href="index.html">Ir a la portada</a></p>
+</div>
+{% endblock %}

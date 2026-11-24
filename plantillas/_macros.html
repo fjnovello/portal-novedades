@@ -1,0 +1,64 @@
+{% macro pastilla(slug, secciones, raiz) -%}
+<a class="pastilla" href="{{ raiz }}seccion/{{ slug }}.html" style="background:{{ secciones[slug][2] }};color:{{ secciones[slug][4] }}"><i class="fa {{ secciones[slug][3] }}"></i> {{ secciones[slug][0] }}</a>
+{%- endmacro %}
+
+{% macro idioma_tag(a, idiomas) -%}
+{% if a.idioma != 'es' %}<span class="idioma" title="Traducido del {{ idiomas.get(a.idioma, a.idioma) }}"><i class="fa fa-language"></i> {{ a.idioma|upper }} → ES</span>{% endif %}
+{% if a.cuerpo %}<span class="completa" title="Nota traducida completa"><i class="fa fa-file-text-o"></i> Nota completa</span>{% endif %}
+{%- endmacro %}
+
+{% macro tarjeta(a, secciones, idiomas, raiz, variante='') -%}
+<article class="tarjeta {{ variante }}" style="--color-seccion:{{ secciones[a.seccion][2] }}">
+  <div class="tarjeta-meta">
+    {{ pastilla(a.seccion, secciones, raiz) }}
+    {{ idioma_tag(a, idiomas) }}
+  </div>
+  <h3><a href="{{ raiz }}nota/{{ a.slug }}.html">{{ a.titulo }}</a></h3>
+  {% if a.resumen and variante != 'compacta' %}<p class="tarjeta-resumen">{{ a.resumen }}</p>{% endif %}
+  <div class="tarjeta-pie">
+    <span class="fuente"><i class="fa fa-newspaper-o"></i> {{ a.fuente }}</span>
+    <time datetime="{{ a.fecha }}" data-relativa>{{ a.fecha|fecha_corta }}</time>
+  </div>
+</article>
+{%- endmacro %}
+
+{% macro fila(a, secciones, idiomas, raiz) -%}
+<li class="fila" style="--color-seccion:{{ secciones[a.seccion][2] }}">
+  <time datetime="{{ a.fecha }}" data-relativa>{{ a.fecha|fecha_corta }}</time>
+  <div>
+    <a class="fila-titulo" href="{{ raiz }}nota/{{ a.slug }}.html">{{ a.titulo }}</a>
+    <div class="fila-meta"><span class="fila-seccion">{{ secciones[a.seccion][0] }}</span> · {{ a.fuente }} {{ idioma_tag(a, idiomas) }}</div>
+  </div>
+</li>
+{%- endmacro %}
+
+{% macro paginador(pagina, total, base) -%}
+{% if total > 1 %}
+{% macro enlace(i) %}{{ ((base ~ '.html') if i == 1 else (base ~ '-' ~ i ~ '.html')) if base else ('index.html' if i == 1 else (i ~ '.html')) }}{% endmacro %}
+<nav class="paginador" aria-label="Páginas">
+  {% if pagina > 1 %}<a href="{{ enlace(pagina - 1) }}" aria-label="Anterior"><i class="fa fa-angle-left"></i></a>{% endif %}
+  {% set desde = [1, pagina - 3]|max %}{% set hasta = [total, pagina + 3]|min %}
+  {% if desde > 1 %}<a href="{{ enlace(1) }}">1</a>{% if desde > 2 %}<span>…</span>{% endif %}{% endif %}
+  {% for i in range(desde, hasta + 1) %}<a href="{{ enlace(i) }}" class="{% if i == pagina %}actual{% endif %}">{{ i }}</a>{% endfor %}
+  {% if hasta < total %}{% if hasta < total - 1 %}<span>…</span>{% endif %}<a href="{{ enlace(total) }}">{{ total }}</a>{% endif %}
+  {% if pagina < total %}<a href="{{ enlace(pagina + 1) }}" aria-label="Siguiente"><i class="fa fa-angle-right"></i></a>{% endif %}
+</nav>
+{% endif %}
+{%- endmacro %}
+
+{% macro compartir(a, sitio, titulo_bloque=False) -%}
+{% set u = a.url_portal|urlencode %}
+{% set t = a.titulo|urlencode %}
+{% set txt = (a.titulo ~ ' | Novedades Odontológicas Consulmed ' ~ a.url_portal)|urlencode %}
+<div class="compartir{% if titulo_bloque %} compartir-final{% endif %}" data-url="{{ a.url_portal }}" data-titulo="{{ a.titulo }}">
+  {% if titulo_bloque %}<span class="compartir-titulo">Compartí esta novedad</span>{% else %}<span class="compartir-titulo">Compartir</span>{% endif %}
+  <a class="red red-whatsapp" href="https://wa.me/?text={{ txt }}" target="_blank" rel="noopener" title="Compartir por WhatsApp" aria-label="Compartir por WhatsApp"><i class="fa fa-whatsapp"></i></a>
+  <a class="red red-linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url={{ u }}" target="_blank" rel="noopener" title="Compartir en LinkedIn" aria-label="Compartir en LinkedIn"><i class="fa fa-linkedin"></i></a>
+  <a class="red red-facebook" href="https://www.facebook.com/sharer/sharer.php?u={{ u }}" target="_blank" rel="noopener" title="Compartir en Facebook" aria-label="Compartir en Facebook"><i class="fa fa-facebook"></i></a>
+  <a class="red red-x" href="https://x.com/intent/post?text={{ t }}&amp;url={{ u }}" target="_blank" rel="noopener" title="Compartir en X" aria-label="Compartir en X"><b>𝕏</b></a>
+  <a class="red red-telegram" href="https://t.me/share/url?url={{ u }}&amp;text={{ t }}" target="_blank" rel="noopener" title="Compartir por Telegram" aria-label="Compartir por Telegram"><i class="fa fa-telegram"></i></a>
+  <a class="red red-correo" href="mailto:?subject={{ t }}&amp;body={{ txt }}" title="Enviar por correo" aria-label="Enviar por correo"><i class="fa fa-envelope"></i></a>
+  <button type="button" class="red red-copiar" title="Copiar enlace" aria-label="Copiar enlace"><i class="fa fa-link"></i><span class="copiado">¡Enlace copiado!</span></button>
+  <button type="button" class="red red-nativo" title="Más opciones" aria-label="Más opciones para compartir" hidden><i class="fa fa-share-alt"></i></button>
+</div>
+{%- endmacro %}

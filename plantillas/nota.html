@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% from "_macros.html" import tarjeta, pastilla, idioma_tag, compartir %}
+{% block titulo %}{{ a.titulo }} | {{ sitio.nombre }} | {{ sitio.marca }}{% endblock %}
+{% block descripcion %}{{ a.resumen }}{% endblock %}
+{% block cabecera_extra %}
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ a.titulo }}">
+<meta property="og:description" content="{{ a.resumen }}">
+<meta property="og:url" content="{{ a.url_portal }}">
+<meta property="og:site_name" content="{{ sitio.nombre }} | {{ sitio.marca }}">
+<meta property="og:locale" content="es_AR">
+{% if a.imagen_redes %}<meta property="og:image" content="{{ a.imagen_redes }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="{{ a.imagen_redes }}">{% endif %}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ a.titulo }}">
+<meta name="twitter:description" content="{{ a.resumen }}">
+<link rel="canonical" href="{{ sitio.url }}/nota/{{ a.slug }}.html">
+<script type="application/ld+json">{{ {"@context": "https://schema.org", "@type": "NewsArticle", "headline": a.titulo, "description": a.resumen, "datePublished": a.fecha, "inLanguage": "es-AR", "isBasedOn": a.url, "publisher": {"@type": "Organization", "name": "Consulmed", "url": sitio.url_consulmed}}|tojson }}</script>
+{% endblock %}
+{% block contenido %}
+<div class="contenedor columnas nota-layout">
+  <article class="nota" style="--color-seccion:{{ secciones[a.seccion][2] }}">
+    <nav class="migas"><a href="../index.html">Inicio</a> <i class="fa fa-angle-right"></i> <a href="../seccion/{{ a.seccion }}.html">{{ secciones[a.seccion][0] }}</a></nav>
+    <div class="tarjeta-meta">{{ pastilla(a.seccion, secciones, raiz) }} {{ idioma_tag(a, idiomas) }}</div>
+    <h1>{{ a.titulo }}</h1>
+    <div class="nota-datos">
+      <span><i class="fa fa-newspaper-o"></i> {{ a.fuente }}</span>
+      <span><i class="fa fa-calendar"></i> <time datetime="{{ a.fecha }}">{{ a.fecha|fecha_larga }}</time></span>
+      {% if a.idioma != 'es' %}<span><i class="fa fa-language"></i> Traducido del {{ a.idioma|idioma }}</span>{% endif %}
+    </div>
+    {{ compartir(a, sitio) }}
+    {% if a.resumen %}<p class="nota-resumen">{{ a.resumen }}</p>{% endif %}
+    {% if a.por_que_importa %}
+    <div class="importa">
+      <h2><i class="fa fa-lightbulb-o"></i> Por qué importa</h2>
+      <p>{{ a.por_que_importa }}</p>
+    </div>
+    {% endif %}
+    {% if a.cuerpo_html %}
+    <div class="cuerpo">
+      {{ a.cuerpo_html|safe }}
+    </div>
+    <p class="licencia"><i class="fa fa-check-circle"></i> {{ licencias[a.licencia].format(fuente=a.fuente) if a.licencia in licencias else '' }}
+      <a href="{{ a.url }}" target="_blank" rel="noopener">Ver la publicación original{% if a.idioma != 'es' %} (en {{ a.idioma|idioma }}){% endif %} <i class="fa fa-external-link"></i></a></p>
+    {% else %}
+    <div class="leer-completa">
+      {% if a.idioma != 'es' and 'news.google.com' not in a.url %}
+      <a class="boton boton-grande" href="{{ leer_en_espanol(a.url, a.idioma) }}" target="_blank" rel="noopener"><i class="fa fa-language"></i> Leer la nota completa en español</a>
+      <p class="chico-nota">Se abre la nota de {{ a.fuente }} traducida automáticamente al español. <a href="{{ a.url }}" target="_blank" rel="noopener">Ver el original en {{ a.idioma|idioma }}</a>.</p>
+      {% else %}
+      <a class="boton boton-grande" href="{{ a.url }}" target="_blank" rel="noopener">Leer la nota completa en {{ a.fuente }} <i class="fa fa-external-link"></i></a>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% if a.idioma != 'es' %}<p class="original">Título original: <i lang="{{ a.idioma }}">{{ a.titulo_original }}</i></p>{% endif %}
+    {{ compartir(a, sitio, True) }}
+    {% if a.etiquetas %}
+    <div class="etiquetas">{% for e in a.etiquetas %}<a href="../buscar.html?q={{ e|urlencode }}#{{ e|urlencode }}">#{{ e }}</a>{% endfor %}</div>
+    {% endif %}
+    {% if a.cuerpo_html %}
+    <p class="aviso"><i class="fa fa-info-circle"></i> Traducción realizada con asistencia de inteligencia artificial. Ante decisiones clínicas, consultá la publicación original.</p>
+    {% else %}
+    <p class="aviso"><i class="fa fa-info-circle"></i> Resumen propio en español elaborado con asistencia de inteligencia artificial a partir de la publicación original de {{ a.fuente }}. Los derechos de la nota pertenecen a su medio. Ante decisiones clínicas, consultá la fuente.</p>
+    {% endif %}
+  </article>
+  <aside class="lateral">
+    {% if relacionadas %}
+    <div class="caja">
+      <h3 class="caja-titulo"><i class="fa {{ secciones[a.seccion][3] }}"></i> Más en {{ secciones[a.seccion][0] }}</h3>
+      <div class="relacionadas">
+        {% for r in relacionadas %}{{ tarjeta(r, secciones, idiomas, raiz, 'compacta') }}{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    <a class="caja caja-consulmed" href="{{ sitio.url_consulmed }}" target="_blank" rel="noopener">
+      <img src="../static/img/logo.png" alt="Consulmed" width="150" height="37">
+      <p>Prestación, administración y financiamiento de servicios odontológicos para empresas, prepagas y obras sociales.</p>
+      <span>Conocé Consulmed <i class="fa fa-angle-right"></i></span>
+    </a>
+  </aside>
+</div>
+{% endblock %}

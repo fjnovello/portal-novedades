@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import fila, paginador %}
+{% block titulo %}Últimas novedades{% if pagina > 1 %} (página {{ pagina }}){% endif %} | {{ sitio.nombre }} | {{ sitio.marca }}{% endblock %}
+{% block contenido %}
+<section class="cabecera-seccion" style="--color-seccion:#0054a6;--texto-seccion:#fff">
+  <div class="contenedor">
+    <nav class="migas"><a href="../index.html">Inicio</a> <i class="fa fa-angle-right"></i> Últimas novedades</nav>
+    <h1><i class="fa fa-clock-o"></i> Últimas novedades</h1>
+    <p>Todo lo que se publica en odontología en el mundo, traducido al español y ordenado del más reciente al más antiguo.</p>
+    <span class="contador">{{ total_notas }} novedades · {{ total_fuentes }} medios · {{ total_idiomas }} idiomas</span>
+  </div>
+</section>
+<div class="contenedor">
+  <div class="filtros" role="group" aria-label="Filtrar por sección">
+    <button class="filtro activo" data-filtro="todas">Todas</button>
+    {% for slug, s in secciones.items() %}<button class="filtro" data-filtro="{{ s[0] }}" style="--color-seccion:{{ s[2] }}">{{ cortos[slug] }}</button>{% endfor %}
+  </div>
+  <ul class="lista-filas lista-archivo">
+    {% for a in notas %}{{ fila(a, secciones, idiomas, raiz) }}{% endfor %}
+  </ul>
+  {{ paginador(pagina, total_paginas, '') }}
+</div>
+{% endblock %}

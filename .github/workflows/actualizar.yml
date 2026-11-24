@@ -1,0 +1,72 @@
+name: Actualizar novedades
+
+on:
+  schedule:
+    - cron: "17 */3 * * *"   # cada 3 horas
+  workflow_dispatch: {}       # botón "Run workflow" para correrlo a mano
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: actualizar
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    env:
+      FTP_SERVIDOR: ${{ secrets.FTP_SERVIDOR }}
+    outputs:
+      publicado_por_ftp: ${{ steps.ftp.outcome == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Buscar, traducir, completar y construir
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DOMINIO_PROPIO: ${{ vars.DOMINIO_PROPIO }}
+        run: python actualizar.py todo
+      - name: Guardar la base de notas
+        run: |
+          git config user.name "Robot Novedades Consulmed"
+          git config user.email "novedades@consulmed.com.ar"
+          git add data/
+          git diff --cached --quiet || git commit -m "Novedades $(date -u +'%Y-%m-%d %H:%M')"
+          git push
+
+      # Opción A: publicar en el hosting actual por FTP.
+      # Se activa sola si existen los secretos FTP_SERVIDOR, FTP_USUARIO y FTP_CLAVE.
+      - name: Publicar por FTP
+        id: ftp
+        if: env.FTP_SERVIDOR != ''
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVIDOR }}
+          username: ${{ secrets.FTP_USUARIO }}
+          password: ${{ secrets.FTP_CLAVE }}
+          protocol: ${{ vars.FTP_PROTOCOLO || 'ftps' }}
+          local-dir: ./sitio/
+          server-dir: ${{ vars.FTP_CARPETA || './novedades/' }}
+
+      # Opción B: GitHub Pages (si no hay FTP configurado)
+      - uses: actions/upload-pages-artifact@v3
+        if: env.FTP_SERVIDOR == ''
+        with:
+          path: sitio
+
+  pages:
+    needs: actualizar
+    if: needs.actualizar.outputs.publicado_por_ftp != 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
