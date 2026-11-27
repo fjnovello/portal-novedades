@@ -19,8 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FTP_SERVIDOR: ${{ secrets.FTP_SERVIDOR }}
+      SITIO_DISPATCH_TOKEN: ${{ secrets.SITIO_DISPATCH_TOKEN }}
     outputs:
-      publicado_por_ftp: ${{ steps.ftp.outcome == 'success' }}
+      # GitHub Pages solo si no hay ni FTP ni sitio nuevo.
+      publicar_pages: ${{ secrets.FTP_SERVIDOR == '' && secrets.SITIO_DISPATCH_TOKEN == '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -40,7 +42,35 @@ jobs:
           git diff --cached --quiet || git commit -m "Novedades $(date -u +'%Y-%m-%d %H:%M')"
           git push
 
-      # Opción A: publicar en el hosting actual por FTP.
+      # Sitio nuevo (github.com/fjnovello/consulmed-sitio, Cloud Run): el portal armado queda en la rama "publicado"
+      # (un solo commit, se pisa en cada corrida) y se le avisa al sitio para que se vuelva a desplegar con las notas nuevas.
+      # El aviso necesita el secreto SITIO_DISPATCH_TOKEN (token con permiso Actions/Contents de escritura sobre consulmed-sitio).
+      - name: Publicar para el sitio nuevo (rama publicado)
+        # Mientras conviva con Ferozo, un error acá no frena la publicación por FTP.
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd sitio
+          rm -rf .git
+          git init -q -b publicado
+          git add -A
+          git -c user.name="Robot Novedades Consulmed" -c user.email="novedades@consulmed.com.ar" \
+            commit -qm "Portal publicado $(date -u +'%Y-%m-%d %H:%M')"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" publicado
+          rm -rf .git
+      - name: Avisar al sitio nuevo
+        if: env.SITIO_DISPATCH_TOKEN != ''
+        continue-on-error: true
+        run: |
+          curl -sSf -X POST \
+            -H "Authorization: Bearer ${SITIO_DISPATCH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/fjnovello/consulmed-sitio/dispatches \
+            -d '{"event_type":"novedades"}'
+
+      # Opción A: publicar en el hosting actual por FTP (Ferozo). Se apaga borrando los secretos FTP_* cuando
+      # consulmed.com.ar apunte al sitio nuevo.
       # Se activa sola si existen los secretos FTP_SERVIDOR, FTP_USUARIO y FTP_CLAVE.
       - name: Publicar por FTP
         id: ftp
@@ -54,15 +84,15 @@ jobs:
           local-dir: ./sitio/
           server-dir: ${{ vars.FTP_CARPETA || './novedades/' }}
 
-      # Opción B: GitHub Pages (si no hay FTP configurado)
+      # Opción B: GitHub Pages (si no hay FTP ni sitio nuevo configurados)
       - uses: actions/upload-pages-artifact@v3
-        if: env.FTP_SERVIDOR == ''
+        if: env.FTP_SERVIDOR == '' && env.SITIO_DISPATCH_TOKEN == ''
         with:
           path: sitio
 
   pages:
     needs: actualizar
-    if: needs.actualizar.outputs.publicado_por_ftp != 'true'
+    if: needs.actualizar.outputs.publicar_pages == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
